@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api, removeToken } from '../api';
+import Alert from './Alert';
 
 type Task = {
   _id: string;
@@ -13,7 +14,7 @@ export default function Dashboard({ onLogout }: { onLogout?: ()=>void }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ type: 'success'|'error'|'info'; text: string } | null>(null);
   const [user, setUser] = useState<any>(null);
 
   const load = async () => {
@@ -23,7 +24,7 @@ export default function Dashboard({ onLogout }: { onLogout?: ()=>void }) {
       const res = await api.getTasks();
       setTasks(res.data || []);
     } catch (err: any) {
-      setMessage(err.message || 'Failed to load');
+      setAlert({ type: 'error', text: err.message || 'Failed to load' });
     }
   };
 
@@ -35,7 +36,8 @@ export default function Dashboard({ onLogout }: { onLogout?: ()=>void }) {
       const res = await api.createTask({ title, description });
       setTasks(prev=>[res.data, ...prev]);
       setTitle(''); setDescription('');
-    } catch (err: any) { setMessage(err.message); }
+      setAlert({ type: 'success', text: 'Task created' });
+    } catch (err: any) { setAlert({ type: 'error', text: err.message || 'Create failed' }); }
   };
 
   const doDelete = async (id: string) => {
@@ -43,7 +45,8 @@ export default function Dashboard({ onLogout }: { onLogout?: ()=>void }) {
     try {
       await api.deleteTask(id);
       setTasks(prev=>prev.filter(t=>t._id!==id));
-    } catch (err: any) { setMessage(err.message); }
+      setAlert({ type: 'success', text: 'Task deleted' });
+    } catch (err: any) { setAlert({ type: 'error', text: err.message || 'Delete failed' }); }
   };
 
   const logout = () => {
@@ -54,6 +57,7 @@ export default function Dashboard({ onLogout }: { onLogout?: ()=>void }) {
   return (
     <div>
       <h2>Dashboard</h2>
+      {alert && <Alert type={alert.type} message={alert.text} onClose={() => setAlert(null)} />}
       <p>Welcome {user?.name} ({user?.role})</p>
       <button onClick={logout}>Logout</button>
 
@@ -69,8 +73,7 @@ export default function Dashboard({ onLogout }: { onLogout?: ()=>void }) {
       </form>
 
       <h3>Tasks</h3>
-      {message && <p>{message}</p>}
-      <ul>
+      <ul className="tasks-list">
         {tasks.map(t => (
           <li key={t._id}>
             <strong>{t.title}</strong> - {t.description}
@@ -78,7 +81,6 @@ export default function Dashboard({ onLogout }: { onLogout?: ()=>void }) {
               <small>By: {(t.user && t.user.name) || (t.user?.toString && t.user.toString())}</small>
             </div>
             <div>
-              {/* Only allow delete if admin or owner */}
               <button onClick={()=>doDelete(t._id)}>Delete</button>
             </div>
           </li>

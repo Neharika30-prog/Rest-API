@@ -1,27 +1,29 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { api } from '../api';
+import Alert from './Alert';
 
 export default function Register({ onRegistered }: { onRegistered?: (token?: string)=>void }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ type: 'success'|'error'|'info'; text: string } | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
+    setAlert(null);
     try {
       const res = await api.register({ name, email, password });
-      setMessage('Registration successful. You can now log in.');
+      setAlert({ type: 'success', text: 'Registration successful. You can now log in.' });
       if (onRegistered && res?.token) onRegistered(res.token);
     } catch (err: any) {
-      setMessage(err.message || 'Registration failed');
+      setAlert({ type: 'error', text: err.message || 'Registration failed' });
     }
   };
 
   return (
     <div>
       <h2>Register</h2>
+      {alert && <Alert type={alert.type} message={alert.text} onClose={() => setAlert(null)} />}
       <form onSubmit={submit}>
         <div>
           <label>Name</label>
@@ -37,7 +39,6 @@ export default function Register({ onRegistered }: { onRegistered?: (token?: str
         </div>
         <button type="submit">Register</button>
       </form>
-      {message && <p>{message}</p>}
     </div>
   );
 }

@@ -70,3 +70,26 @@ label { text-align: left; font-size: 0.9rem; }
 @media (max-width: 700px) {
   .features { grid-template-columns: 1fr; }
 }
+
+/* Alert styles */
+.alert {
+  position: relative;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.alert-message { flex: 1; text-align: left; }
+.alert-success { background: linear-gradient(180deg, rgba(16,185,129,0.12), rgba(16,185,129,0.06)); border: 1px solid rgba(16,185,129,0.16); color: #b7f5d6; }
+.alert-error { background: linear-gradient(180deg, rgba(239,68,68,0.08), rgba(239,68,68,0.04)); border: 1px solid rgba(239,68,68,0.12); color: #ffd6d6; }
+.alert-info { background: linear-gradient(180deg, rgba(96,165,250,0.06), rgba(96,165,250,0.03)); border: 1px solid rgba(96,165,250,0.10); color: #d9e9ff; }
+.alert-close {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+}

@@ -1,31 +1,33 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { api, saveToken } from '../api';
+import Alert from './Alert';
 
 export default function Login({ onLogin }: { onLogin?: ()=>void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ type: 'success'|'error'|'info'; text: string } | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
+    setAlert(null);
     try {
       const res = await api.login({ email, password });
       if (res?.token) {
         saveToken(res.token);
-        setMessage('Login successful');
-        if (onLogin) onLogin();
+        setAlert({ type: 'success', text: 'Login successful' });
+        setTimeout(() => { if (onLogin) onLogin(); }, 600);
       } else {
-        setMessage('Login did not return a token');
+        setAlert({ type: 'error', text: 'Login did not return a token' });
       }
     } catch (err: any) {
-      setMessage(err.message || 'Login failed');
+      setAlert({ type: 'error', text: err.message || 'Login failed' });
     }
   };
 
   return (
     <div>
       <h2>Login</h2>
+      {alert && <Alert type={alert.type} message={alert.text} onClose={() => setAlert(null)} />}
       <form onSubmit={submit}>
         <div>
           <label>Email</label>
@@ -37,7 +39,6 @@ export default function Login({ onLogin }: { onLogin?: ()=>void }) {
         </div>
         <button type="submit">Login</button>
       </form>
-      {message && <p>{message}</p>}
     </div>
   );
 }
